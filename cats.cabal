@@ -1,0 +1,37 @@
+name:                cats
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/ThomWright/cats#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Thom Wright
+maintainer:          git@thomwright.co.uk
+copyright:           2018 Thom Wright
+category:            Tools
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+executable cats
+  ghc-options:         -Wall -Werror -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  hs-source-dirs:      main
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5
+                     , cats
+                     , optparse-applicative == 0.14.*
+
+library
+  ghc-options:         -Wall -Werror -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  default-extensions:  OverloadedStrings
+  Other-Modules:       Paths_cats
+  Exposed-Modules:     Cats.App
+  build-depends:       base >= 4.7 && < 5
+                     , bytestring == 0.10.*
+                     , directory == 1.3.*
+                     , directory-tree == 0.12.*
+                     , filepath == 1.4.*
+                     , text == 1.2.*
