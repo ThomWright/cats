@@ -2,21 +2,21 @@ module Cats.App
   ( cats
   ) where
 
-import           Data.ByteString       (ByteString, hGetLine)
+import qualified Data.Text             as T
+import qualified Data.Text.IO          as TIO
 import           System.Directory.Tree (AnchoredDirTree (..), DirTree (..),
                                         readDirectoryWith)
-import           System.IO             (Handle, IOMode (ReadMode), withFile)
 
 cats :: FilePath -> IO ()
 cats dir = do
-  anchTree <- readDirectoryWith readFirstLine dir
+  anchTree <- readDirectoryWith (withFile imports) dir
   mapM_ putStrLn $ drawAnchoredTree anchTree
 
-readFirstLine :: FilePath -> IO ByteString
-readFirstLine fp = withFile fp ReadMode readL
-  where
-    readL :: Handle -> IO ByteString
-    readL = hGetLine
+withFile :: (T.Text -> a) -> FilePath -> IO a
+withFile f filepath = f <$> TIO.readFile filepath
+
+imports :: T.Text -> [T.Text]
+imports = filter (T.isPrefixOf "import") . T.lines
 
 drawAnchoredTree :: Show a => AnchoredDirTree a -> [String]
 drawAnchoredTree (anchor' :/ tree) = anchor' : drawDirTree tree
