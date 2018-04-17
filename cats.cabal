@@ -27,11 +27,13 @@ library
   hs-source-dirs:      src
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
-  Other-Modules:       Paths_cats
+  Other-Modules:       Cats.Lexer
+                     , Cats.Parser
   Exposed-Modules:     Cats.App
   build-depends:       base >= 4.7 && < 5
                      , bytestring == 0.10.*
                      , directory == 1.3.*
                      , directory-tree == 0.12.*
                      , filepath == 1.4.*
+                     , parsec == 3.1.13.*
                      , text == 1.2.*
