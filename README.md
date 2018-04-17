@@ -24,7 +24,9 @@ hfmt -w
 
 ## Background
 
-http://www.sdml.cs.kent.edu/library/Allen99.pdf
+[Package by feature, not layer](http://www.javapractices.com/topic/TopicAction.do?Id=205)
+
+[Measuring Coupling and Cohesion: An Information-Theory Approach](http://www.sdml.cs.kent.edu/library/Allen99.pdf)
 
 - nodes=files, modules=directories
 - analyse intramodule coupling
