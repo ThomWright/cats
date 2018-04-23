@@ -2,6 +2,11 @@ module Cats.App
   ( cats
   ) where
 
+import           Cats.DirTree.Print    (printTree)
+import           Cats.DirTree.Utils    (filterFiles, mapFiles)
+import           Data.List             (isSuffixOf)
+import           Data.Maybe
+
 import           Cats.Parser           (allImportDeclarations)
 import qualified Data.Text             as T
 import qualified Data.Text.IO          as TIO
@@ -11,40 +16,34 @@ import qualified Text.Parsec           as Parsec
 
 cats :: FilePath -> IO ()
 cats dir = do
-  anchTree <- readDirectoryWith (withFile imports) dir
-  case sequence (dirTree anchTree) of
-    Left _        -> printTree anchTree
-    Right dirtree -> printTree (dir :/ clean dirtree)
+  fileContents <- readDirectoryWith readTSFile dir
+  let onlyTS = filterFiles isJust (dirTree fileContents)
+  case sequence onlyTS of
+    Nothing -> putStrLn "oh no"
+    Just tsFiles ->
+      let parsed = mapFiles parseImports tsFiles
+      in case sequence parsed of
+           Left _        -> printTree (dir :/ parsed)
+           Right dirtree -> printTree (dir :/ onlyRelative dirtree)
 
-printTree :: Show a => AnchoredDirTree a -> IO ()
-printTree = mapM_ putStrLn . drawAnchoredTree
+isTypeScriptFile :: FilePath -> Bool
+isTypeScriptFile filepath' = ".ts" `isSuffixOf` filepath'
 
-withFile :: (T.Text -> a) -> FilePath -> IO a
-withFile f filepath = f <$> TIO.readFile filepath
+readTSFile :: FilePath -> IO (Maybe T.Text)
+readTSFile filepath' =
+  if isTypeScriptFile filepath'
+    then fmap Just (TIO.readFile filepath')
+    else return Nothing
 
-imports :: T.Text -> Either Parsec.ParseError [T.Text]
-imports input =
+parseImports :: T.Text -> Either Parsec.ParseError [T.Text]
+parseImports input =
   case Parsec.runParser allImportDeclarations () "" (T.unpack input) of
     Left parseErr -> Left parseErr
     Right result  -> Right (map T.pack result)
 
 -- we only care about modules we're importing from within the project
-clean :: DirTree [T.Text] -> DirTree [T.Text]
-clean = fmap (filter relativePath)
+onlyRelative :: DirTree [T.Text] -> DirTree [T.Text]
+onlyRelative = fmap (filter relativePath)
 
 relativePath :: T.Text -> Bool
-relativePath = T.isPrefixOf "."
-
-drawAnchoredTree :: Show a => AnchoredDirTree a -> [String]
-drawAnchoredTree (anchor' :/ tree) = anchor' : drawDirTree tree
-
-drawDirTree :: Show a => DirTree a -> [String]
-drawDirTree (File name' file') = [name', show file']
-drawDirTree (Failed name' err') = [name', show err']
-drawDirTree (Dir name' contents') = name' : drawSubTrees contents'
-  where
-    drawSubTrees [] = []
-    drawSubTrees [t] = "|" : shift "`- " "   " (drawDirTree t)
-    drawSubTrees (t:ts) =
-      "|" : shift "+- " "|  " (drawDirTree t) ++ drawSubTrees ts
-    shift first other = zipWith (++) (first : repeat other)
+relativePath path = "." `T.isPrefixOf` path

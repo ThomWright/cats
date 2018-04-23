@@ -29,6 +29,8 @@ library
   default-extensions:  OverloadedStrings
   Other-Modules:       Cats.Lexer
                      , Cats.Parser
+                     , Cats.DirTree.Print
+                     , Cats.DirTree.Utils
   Exposed-Modules:     Cats.App
   build-depends:       base >= 4.7 && < 5
                      , bytestring == 0.10.*
